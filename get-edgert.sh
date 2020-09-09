@@ -8,16 +8,37 @@
 # 3. Run the following command on each manager node:
 # curl -sfL https://1st-zoom.github.io/get-edgert.sh | sudo EDGERT_APPKEY=<key> EDGERT_APPSECRET=<secret> sh -
 
-set -eu
+set -e
+
+if [ -z "${EDGERT_APPKEY}" ]; then
+  echo "ERROR: missing parameter EDGERT_APPKEY"
+  exit 1
+fi
+
+if [ -z "${EDGERT_APPSECRET}" ]; then
+  echo "ERROR: missing parameter EDGERT_APPSECRET"
+  exit 1
+fi
+
+EDGERT_PACKAGE=edgert
+if [ "${EDGERT_CORE}" = true ]; then
+  EDGERT_PACKAGE=edgert-core
+fi
 
 apt-get -y install curl gnupg apt-transport-https
 
 curl -L https://packagecloud.io/1stzoom/stable/gpgkey | apt-key add -
 echo "deb https://packagecloud.io/1stzoom/stable/ubuntu/ bionic main" > /etc/apt/sources.list.d/1stzoom_stable.list
 apt-get update
-apt-get -y install edgert
+apt-get -y install ${EDGERT_PACKAGE}
+
 edgert config -w \
     cp.url=https://cr.1stzoom.com/api/v1 \
     cp.key=${EDGERT_APPKEY} \
     cp.secret=${EDGERT_APPSECRET}
-dpkg-reconfigure edgert
+
+if [ ! -z "${EDGERT_DEVICEID}" ]; then
+  edgert config -w device.id=${EDGERT_DEVICEID}
+fi
+
+dpkg-reconfigure ${EDGERT_PACKAGE}

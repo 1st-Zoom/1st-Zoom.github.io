@@ -37,8 +37,8 @@ edgert config -w \
     cp.key=${EDGERT_APPKEY} \
     cp.secret=${EDGERT_APPSECRET}
 
-if [ ! -z "${EDGERT_DEVICEID}" ]; then
+if [ -z "${EDGERT_DEVICEID}" ]; then
+  edgert device register
+else
   edgert config -w device.id=${EDGERT_DEVICEID}
 fi
-
-dpkg-reconfigure ${EDGERT_PACKAGE}
